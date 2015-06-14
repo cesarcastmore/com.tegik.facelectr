@@ -1,4 +1,4 @@
-package com.tegik.facelectr.comprobante.updates;
+package com.tegik.facelectr.comprobante;
 
 import java.util.ArrayList;
 import java.util.List;

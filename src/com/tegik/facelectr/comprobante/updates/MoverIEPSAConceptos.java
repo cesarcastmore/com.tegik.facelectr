@@ -9,6 +9,8 @@ import mx.bigdata.sat.cfdi.v32.schema.Comprobante.Impuestos.Traslados.Traslado;
 import org.apache.log4j.Logger;
 import org.openbravo.model.common.invoice.InvoiceTax;
 
+import com.tegik.facelectr.comprobante.ComprobanteOpenbravo;
+
 
 public class MoverIEPSAConceptos implements UpdatingComprobante {
 

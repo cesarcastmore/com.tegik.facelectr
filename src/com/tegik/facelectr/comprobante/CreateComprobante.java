@@ -5,7 +5,6 @@ import org.openbravo.model.common.invoice.Invoice;
 
 import com.tegik.facelectr.action.CreateElectronicInvoice;
 import com.tegik.facelectr.addenda.CreateAddenda;
-import com.tegik.facelectr.comprobante.updates.ComprobanteOpenbravo;
 import com.tegik.facelectr.data.Adenda;
 import com.tegik.facelectr.utilidad.Finder;
 import com.tegik.facelectr.utilidad.Validate;

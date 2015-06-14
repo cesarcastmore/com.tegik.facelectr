@@ -113,8 +113,7 @@ public class CreateComprobanteDefecto extends CreateComprobante {
     for (ConversionRate CurrencyRate : conversations) {
       comp.setTipoCambio(CurrencyRate.getMultipleRateBy().toString());
     }
-      
-    
+        
     comprobanteOB.setEncabezado(invoice);
     
     return comp;
@@ -237,18 +236,19 @@ public class CreateComprobanteDefecto extends CreateComprobante {
   
   
   public Conceptos createConceptos() {
+    
     Conceptos cps =  new Conceptos();
     
     List<Concepto> listaConceptos = cps.getConcepto();
-    boolean notDesgIEPS =  (!(invoice.getBusinessPartner().isFetDesglosarieps()== null ?
-        true : invoice.getBusinessPartner().isFetDesglosarieps()));
     
     for (InvoiceLine linea : invoice.getInvoiceLineList()) {
       
+      //Obtiene los productos 
       if (linea.getProduct() != null || linea.getAccount() != null) {
         
         Concepto concepto = new Concepto();
         concepto.setUnidad(linea.getUOM().getName());
+        concepto.setDescripcion(linea.getProduct().getDescription().trim());
         
         BigDecimal importeNeto = linea.getLineNetAmount().setScale(2, RoundingMode.HALF_UP);
         BigDecimal cantidadFacturada = linea.getInvoicedQuantity().setScale(2, RoundingMode.HALF_UP);
@@ -275,8 +275,12 @@ public class CreateComprobanteDefecto extends CreateComprobante {
             concepto.setValorUnitario(linea.getUnitPrice().abs().setScale(2, RoundingMode.HALF_UP));
             
           }
+          
+
         }
         
+        
+        /*
         String descripcionExtra = "";
         if (linea.getDescription() != null ) {
           if (!linea.getDescription().equals("CARGO POR USADO")) {
@@ -300,9 +304,9 @@ public class CreateComprobanteDefecto extends CreateComprobante {
           }
         } else {
           concepto.setDescripcion(linea.getAccount().getName());
-        }
+        }*/
 
-
+        
         comprobanteOB.addConceptos(linea);
         
         listaConceptos.add(concepto);
