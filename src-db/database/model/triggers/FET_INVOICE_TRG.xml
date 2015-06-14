@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER FET_INVOICE_TRG">
+    <trigger name="FET_INVOICE_TRG" table="C_INVOICE" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[ nuevo_correo VARCHAR;
+ 
+ p_isLegalEntity CHAR(1);
+ p_isAcctLegalEntity CHAR(1);
+ 
+ p_orgType_id VARCHAR(32);
+ p_OrgLegal_ID VARCHAR(32);
+
+ p_parent_id VARCHAR(32);
+ p_node_id  VARCHAR(32);
+ p_treeNode_id  VARCHAR(32);
+
+ p_location_id VARCHAR(32);
+
+ 
+BEGIN
+  IF AD_isTriggerEnabled()='N' THEN RETURN;
+  END IF;
+
+IF(:NEW.EM_Fet_OrgLegal_id IS NULL) THEN
+ SELECT AD_OrgType_ID FROM AD_ORG 
+     WHERE :NEW.AD_ORG_ID=AD_Org_ID INTO p_orgType_id;
+
+  SELECT isAcctLegalEntity, isLegalEntity
+     FROM AD_OrgType
+        WHERE AD_OrgType_ID = p_orgType_id  
+        INTO p_isAcctLegalEntity, p_isLegalEntity;
+
+   SELECT ad_treenode_id, parent_id, node_id
+       FROM AD_TreeNode WHERE node_id = :NEW.AD_ORG_ID
+        INTO p_treeNode_id, p_parent_id, p_node_id ;
+
+ p_OrgLegal_ID =:NEW.AD_ORG_ID;
+ 
+ WHILE NOT (p_isAcctLegalEntity= 'Y' OR  p_isLegalEntity= 'Y' OR p_parent_id = '0')
+  LOOP 
+
+    p_OrgLegal_ID =  p_parent_id;
+
+
+
+     SELECT AD_OrgType_ID 
+       FROM AD_ORG 
+        WHERE p_OrgLegal_ID = AD_Org_ID INTO p_orgType_id;
+        
+    SELECT isAcctLegalEntity, isLegalEntity
+     FROM AD_OrgType
+        WHERE AD_OrgType_ID = p_orgType_id  
+        INTO p_isAcctLegalEntity, p_isLegalEntity;
+
+    
+   SELECT ad_treenode_id, parent_id, node_id
+       FROM AD_TreeNode WHERE node_id = p_OrgLegal_ID
+        INTO p_treeNode_id, p_parent_id, p_node_id ; 
+
+   END LOOP;
+ 
+  SELECT C_Location_ID FROM AD_OrgInfo WHERE Ad_Org_ID = :New.AD_Org_ID INTO p_Location_ID LIMIT 1;
+
+
+  :NEW.EM_Fet_OrgLegal_id = p_OrgLegal_ID;
+  :NEW.em_fet_dirfiscal = p_Location_ID;
+ 
+END IF;
+
+ 
+
+  SELECT U.email INTO nuevo_correo FROM AD_USER U, C_INVOICE I WHERE U.ad_user_id = I.ad_user_id AND I.c_invoice_id = :NEW.c_invoice_id;
+
+  :NEW.em_fet_correoelectronico = nuevo_correo;
+
+  IF (:NEW.em_fet_formadepago = 'Pago en una sola exhibicion') THEN
+	:NEW.em_fet_formadepago = '1';
+  END IF;
+
+  IF (UPDATING) THEN
+	IF (:NEW.DOCSTATUS NOT IN ('CO', 'VO') AND :OLD.DOCSTATUS = 'CO' AND COALESCE(:NEW.EM_FET_DOCSTATUS, 'NADA') = 'Facturado') THEN
+		RAISE_APPLICATION_ERROR(-20000, 'No se puede reactivar una factura que ha sido timbrada') ;
+	END IF;
+  END IF;
+
+
+RETURN NEW;
+
+  
+
+END FET_INVOICE_TRG
+]]></body>
+    </trigger>
+  </database>

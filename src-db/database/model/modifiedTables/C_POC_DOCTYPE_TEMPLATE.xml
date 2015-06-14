@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE C_POC_DOCTYPE_TEMPLATE">
+    <table name="C_POC_DOCTYPE_TEMPLATE" primaryKey="C_POC_DOCTYPE_TEMPLATE_PK">
+      <column name="EM_FET_COLOCADO" primaryKey="false" required="false" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[Y]]></default>
+        <onCreateDefault/>
+      </column>
+    </table>
+  </database>

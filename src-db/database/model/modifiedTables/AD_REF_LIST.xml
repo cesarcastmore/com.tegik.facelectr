@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE AD_REF_LIST">
+    <table name="AD_REF_LIST" primaryKey="AD_REF_LIST_KEY">
+      <column name="EM_FET_LLAMARJAVA" primaryKey="false" required="false" type="VARCHAR" size="60" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+    </table>
+  </database>

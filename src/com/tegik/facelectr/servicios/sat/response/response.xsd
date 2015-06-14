@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+          <!-- XML Schema Generated from XML Document on Mon Apr 27 2015 17:56:33 GMT-0500 (CDT) -->
+          <!-- with XmlGrid.net Free Online Service http://xmlgrid.net -->
+       <xs:element name="ConsultaResponse">
+              <xs:complexType>
+                     <xs:sequence>
+                            <xs:element name="ConsultaResult">
+                                   <xs:complexType>
+                                          <xs:sequence>
+                                                 <xs:element name="CodigoEstatus" type="xs:string"></xs:element>
+                                                 <xs:element name="Estado" type="xs:string"></xs:element>
+                                             </xs:sequence>
+                                      </xs:complexType>
+                               </xs:element>
+                        </xs:sequence>
+                 </xs:complexType>
+          </xs:element>
+   </xs:schema>

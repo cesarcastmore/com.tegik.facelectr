@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<SqlClass name="LlamarConsultas" package="com.tegik.facelectr.ad_actionButton">
+  <SqlMethod name="isDesglosarIEPS" type="preparedStatement" return="String">
+    <Sql>
+      SELECT Em_Fet_DesglosarIEPS AS isdeglosar 
+         FROM C_Bpartner
+           WHERE C_Bpartner_ID= ? 
+    </Sql>
+    <Parameter name="bpartnerId"/>
+  </SqlMethod>
+  
+</SqlClass>
