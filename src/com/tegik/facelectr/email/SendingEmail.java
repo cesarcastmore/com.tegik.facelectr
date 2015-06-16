@@ -163,14 +163,13 @@ public class SendingEmail {
     
 
     serviceEmail.send();
-
-    
-    
-    
-    
+ 
 
         
     
   }
+
+
+
 
 }

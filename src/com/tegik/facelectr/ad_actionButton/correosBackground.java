@@ -42,7 +42,8 @@ public class correosBackground extends DalBaseProcess {
         if (counter < 100) {
           enviadorCorreos enviador = new enviadorCorreos();
           // ServletConfig config2 = ;
-          String respuestaEnvio = enviador.solicitarEnvio( factura, "Y", "Y");
+          String respuestaEnvio =null ;
+              //enviador.solicitarEnvio( factura, "Y", "Y");
           logger.log("Envío de correos Loop " + factura.getDocumentNo() + " // " + respuestaEnvio
               + "\n");
           counter++;

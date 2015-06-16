@@ -218,6 +218,7 @@ public class Util {
     }
     
     if(urlCancelacion == null){
+      log.info("entro aqui1");
       throw new Exception("@FET_ErrorConfiguracionVieja@");
       
     }
@@ -236,6 +237,7 @@ public class Util {
       fileExt = getAttachmentFileOrgLegalbyExtension(invoice);
       
       if(fileExt == null){
+        log.info("entro aqui2");
         throw new Exception("@FET_ErrorConfiguracionVieja@");
       }
       
@@ -253,14 +255,13 @@ public class Util {
     
     
     if(attachmentCer == null || attachmentKey== null  ){
+      log.info("entro aqui3");
       throw new Exception("@FET_ErrorConfiguracionVieja@");
     }
        
     
     timbrado.setNombrecer(attachmentCer.getName());
     timbrado.setNombrekey(attachmentKey.getName());
-    
-
     
     String password = org.getFetPassfiel();
   
@@ -281,12 +282,6 @@ public class Util {
     timbrado.setModificar(false);
     timbrado.setEnviarcorreo(false);
     timbrado.setTimbrar(true);
-    
-    
-
-    
-    
-    
     
     OBDal.getInstance().save(timbrado);
     OBDal.getInstance().flush();

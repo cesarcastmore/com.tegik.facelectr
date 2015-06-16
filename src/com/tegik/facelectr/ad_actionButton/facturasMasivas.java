@@ -113,7 +113,8 @@ public class facturasMasivas extends HttpSecureAppServlet {
           continue;
         }
 
-        String respuestaEnvio = enviador.solicitarEnvio(factura, "Y", "Y");
+        String respuestaEnvio = "";
+            //enviador.solicitarEnvio(factura, "Y", "Y");
         log.info("CSM>CORREOS -- " + respuestaEnvio);
         if (respuestaEnvio == "OK") {
           // myMessage.setType("Success");

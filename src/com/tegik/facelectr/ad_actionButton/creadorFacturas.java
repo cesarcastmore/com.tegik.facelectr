@@ -447,22 +447,11 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
                       Calendar calendario = Calendar.getInstance();
                       calendario.setTime(result);
 
-                      // log.info("CSM // PEDIMENTOS // FECHA // c.get(Calendar.YEAR)" +
-                      // calendario.get(Calendar.YEAR));
-                      // log.info("CSM // PEDIMENTOS // FECHA // c.get(Calendar.MONTH)" +
-                      // calendario.get(Calendar.MONTH));
-                      // log.info("CSM // PEDIMENTOS // FECHA // c.get(Calendar.DAY)" +
-                      // calendario.get(Calendar.DAY_OF_MONTH));
-                      // log.info("CSM // PEDIMENTOS // FECHA // result.toString()" +
-                      // result.toString());
 
                       int year, month, day;
 
                       year = result.getYear() + 1900;
-                      // log.info("CSM // PEDIMENTOS // FECHA // year" + Integer.toString(year));
                       month = result.getMonth() + 1;
-                      // log.info("CSM // PEDIMENTOS // FECHA // month" + Integer.toString(month));
-                      // log.info("CSM // PEDIMENTOS // FECHA // day" + Integer.toString(day));
                       day = result.getDate();
 
                       // consultar lo siguiente
@@ -530,7 +519,6 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
            
          Traslado t1 = of.createComprobanteImpuestosTrasladosTraslado();
           BigDecimal ta = lineaImpuesto.getTaxAmount();
-          // t1.setImporte(lineaImpuesto.getTaxAmount());
           t1.setImporte(ta.abs());
           if(!Validate.validate(lineaImpuesto.getTax().getFetNombrefacturacion(),new String[]{"IVA", "IEPS"})){
             throw new Exception("@FET_InvalidImpuestoTrasladoFacturacion@");
@@ -546,7 +534,6 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
     Retenciones retenciones = of.createComprobanteImpuestosRetenciones();
     List<Retencion> listaRetenciones = retenciones.getRetencion();
     for (InvoiceTax lineaImpuesto : factura.getInvoiceTaxList()) {
-      // if (lineaImpuesto.getTaxAmount().compareTo(new BigDecimal (0.0)) < 0)
       if ((lineaImpuesto.getTaxAmount().compareTo(new BigDecimal(0.0)) < 0 && factura
           .getSummedLineAmount().compareTo(new BigDecimal(0.0)) > 0)
           || (lineaImpuesto.getTaxAmount().compareTo(new BigDecimal(0.0)) > 0 && factura
@@ -597,8 +584,6 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
     List<Object> objetoAddenda = null;
 
     try {
-      // Class claseAddenda =
-      // ClassLoader.getSystemClassLoader().loadClass("com.tegik.addenda.module.proc.manejadorAddenda");
       Class claseAddenda = Class.forName("com.tegik.addenda.module.proc.manejadorAddenda");
 
       // Se obtiene el constructor de la clase

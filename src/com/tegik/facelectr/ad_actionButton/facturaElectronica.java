@@ -45,7 +45,6 @@ import org.openbravo.dal.service.OBDal;
 import org.openbravo.database.ConnectionProvider;
 import org.openbravo.erpCommon.utility.OBError;
 import org.openbravo.model.ad.datamodel.Table;
-import org.openbravo.model.ad.ui.Tab;
 import org.openbravo.model.ad.utility.Attachment;
 import org.openbravo.model.common.enterprise.Organization;
 import org.openbravo.model.common.geography.Location;
@@ -60,6 +59,7 @@ import org.openbravo.service.db.DalConnectionProvider;
 import com.tegik.facelectr.hearthbeat.ServicioTimbrado;
 import com.tegik.facelectr.utilidad.CreateFiles;
 import com.tegik.facelectr.utilidad.Finder;
+import com.tegik.facelectr.utilidad.Util;
 
 /**
  * Creando una factura electrónica para México.
@@ -81,18 +81,21 @@ public class facturaElectronica  extends DalBaseProcess {
   private String Separador = "/";
   private Boolean banderaSeguir = true;
   private String timbradoTestStatus = "NE";
+  
+  private Attachment archivoPDF=null;
+  private Attachment archivoXML=null;
+  
 
 
   // main HTTP call handler
   public OBError facturar(ProcessBundle bundle) throws Exception {
     
     String invoiceId = (String) bundle.getParams().get("C_Invoice_ID");  
-    String strTab = (String) bundle.getParams().get("tabId"); 
     
     log.info( bundle.getParamsDeflated());
 
 
-    if (1 == 1) {
+    if (1 ==1) {
 
       rutaAttach = "";
       NumFac = "";
@@ -109,22 +112,17 @@ public class facturaElectronica  extends DalBaseProcess {
       
       
       Invoice facturaTest = OBDal.getInstance().get(Invoice.class, invoiceId);
+      Table table = OBDal.getInstance().get(Table.class, "318");
+
       
 
-      // log.info("dopost -- 3");
       OBError myMessage2 = new OBError();
-      // myMessage2.setMessage("Aquí se debe de terminar el proceso");
-      // myMessage2.setType("Error");
-      // myMessage2.setTitle("Facturación");
-      String rutaTimbradoTest = attachFolder + "318/" + invoiceId + Separador.substring(0, 1)
+      String rutaTimbradoTest = attachFolder + "318"+ Separador.substring(0, 1) + invoiceId + Separador.substring(0, 1)
           + "Timbrado" + facturaTest.getDocumentNo() + ".xml";
-      // log.info("CSM> rutaTimbradoTest -- " + rutaTimbradoTest);
-      String rutaRequestTest = attachFolder + "318/" + invoiceId + Separador.substring(0, 1)
+      String rutaRequestTest = attachFolder + "318"+ Separador.substring(0, 1) + invoiceId + Separador.substring(0, 1)
           + "requestTimbrado" + facturaTest.getDocumentNo() + ".xml";
-      // log.info("CSM> rutaRequestTest -- " + rutaRequestTest);
-      String rutaXMLTest = attachFolder + "318/" + invoiceId + Separador.substring(0, 1)
+      String rutaXMLTest = attachFolder + "318"+ Separador.substring(0, 1) + invoiceId + Separador.substring(0, 1)
           + facturaTest.getDocumentNo() + ".xml";
-      // log.info("CSM> rutaXMLTest -- " + rutaXMLTest);
 
       File timbradoTest = new File(rutaTimbradoTest);
       File requestTest = new File(rutaRequestTest);
@@ -221,7 +219,7 @@ public class facturaElectronica  extends DalBaseProcess {
         facturaTest.setFetCertificadoSat(getValuefromXML(timbradoTest, "noCertificadoSAT"));
         facturaTest.setFetFoliofiscal(getValuefromXML(timbradoTest, "UUID"));
 
-        String rutaComprobanteTest = attachFolder + "318/" + invoiceId
+        String rutaComprobanteTest = attachFolder + "318"+ Separador.substring(0, 1) + invoiceId
             + Separador.substring(0, 1) + facturaTest.getDocumentNo() + ".xml";
         FileInputStream fisComprobante = new FileInputStream(new File(rutaComprobanteTest));
         try {
@@ -262,7 +260,7 @@ public class facturaElectronica  extends DalBaseProcess {
       log.info("MENSAGE 150" + strTimbrar );
       // run the calculation
       if (banderaSeguir) {
-        OBError myMessage = creaFacturaElectronica(invoiceId, strTab);
+        OBError myMessage = creaFacturaElectronica( invoiceId, table);
  
         if (strTimbrar.equals("OK") && myMessage.getType() == "Success") {
           // log.info("dopost -- 5");
@@ -278,12 +276,13 @@ public class facturaElectronica  extends DalBaseProcess {
               OBDal.getInstance().refresh(facturaParaCorreo);
 
               //Crear el PDF
-              Attachment attchPDF= CreateFiles.createAttamentPDF("318", facturaParaCorreo.getId(), facturaParaCorreo);        
+              archivoPDF= CreateFiles.createAttamentPDF(table.getId(), facturaParaCorreo.getId(), facturaParaCorreo);        
               
 
               
               enviadorCorreos enviador = new enviadorCorreos(); // clase existente en el package             
-              String respuestaEnvio = enviador.solicitarEnvio(facturaParaCorreo, "Y", "Y");
+              String respuestaEnvio = enviador.solicitarEnvio(facturaParaCorreo, "Y", "Y", 
+                  Util.getFile(archivoPDF), Util.getFile(archivoXML));
               
               
               if (respuestaEnvio.equals("OK")) {
@@ -328,7 +327,7 @@ public class facturaElectronica  extends DalBaseProcess {
     return messageNull;
   }
 
-  public OBError creaFacturaElectronica(String strInvoiceId, String strTab) throws IOException, ServletException {
+  public OBError creaFacturaElectronica(String strInvoiceId, Table table) throws IOException, ServletException {
     OBError myMessage = new OBError();
     
     try {
@@ -338,7 +337,9 @@ public class facturaElectronica  extends DalBaseProcess {
       OBContext.setAdminMode(true);
       Invoice factura = OBDal.getInstance().get(Invoice.class, strInvoiceId);
       
-      Tab tabFactura = OBDal.getInstance().get(Tab.class, strTab);
+      
+      
+
       
       myMessage.setMessage("Mi mensaje de prueba");
       myMessage.setType("Error");
@@ -356,11 +357,11 @@ public class facturaElectronica  extends DalBaseProcess {
             
       String PasswordFiel = orgPadre.getFetPassfiel(); // password de fiel
       String PasswordPAC = orgPadre.getFetPasspac(); // password de pac
-      File archivo = new File(attachFolder + tabFactura.getTable().getId() + "/" + strInvoiceId
+      File archivo = new File(attachFolder + table.getId() + Separador.substring(0, 1)+ strInvoiceId
           + Separador.substring(0, 1) + factura.getDocumentNo() + ".xml"); // Liga del archivo en
                                                                            // tipo File
  
-      File path = new File(attachFolder + tabFactura.getTable().getId() + "/" + strInvoiceId
+      File path = new File(attachFolder + table.getId() + Separador.substring(0, 1)+ strInvoiceId
           + Separador.substring(0, 1)); // Ruta de la factura en tipo File
 
       boolean exists = path.exists();
@@ -370,15 +371,15 @@ public class facturaElectronica  extends DalBaseProcess {
       }
 
 
-      ruta = attachFolder + tabFactura.getTable().getId() + "/" + strInvoiceId
+      ruta = attachFolder + table.getId() + Separador.substring(0, 1)+ strInvoiceId
           + Separador.substring(0, 1); // Ruta de la factura en tipo String
       NumFac = factura.getDocumentNo();
       String Documento = factura.getTransactionDocument().getDocumentCategory(); // Tipo de
                                                                                  // documento de
                                                                                  // openbravo
-      rutaAttach = tabFactura.getTable().getId() + "/" + strInvoiceId;
+      rutaAttach = table.getId() + Separador.substring(0, 1)+ strInvoiceId;
       // log.info("cfe -- 6");
-      File archivoTimbrado = new File(attachFolder + tabFactura.getTable().getId() + "/"
+      File archivoTimbrado = new File(attachFolder + table.getId() + Separador.substring(0, 1)
           + strInvoiceId + Separador.substring(0, 1) + "Timbrado" + factura.getDocumentNo()
           + ".xml"); // Liga del archivo en tipo File
 
@@ -533,24 +534,12 @@ public class facturaElectronica  extends DalBaseProcess {
           cfd.guardar(new FileOutputStream(archivo)); // Guarda el archivo
           String codigo = convertXMLFileToString(ruta + NumFac + ".xml");
           
-          codigo.replaceAll("á", "a");
-          codigo.replaceAll("é", "e");
-          codigo.replaceAll("í", "i");
-          codigo.replaceAll("ó", "o");
-          codigo.replaceAll("ú", "u");
-          
-          codigo.replaceAll("Á", "A");
-          codigo.replaceAll("É", "E");
-          codigo.replaceAll("Í", "I");
-          codigo.replaceAll("Ó", "O");
-          codigo.replaceAll("Ú", "U");
-          
           String FacturaString = Base64Coder.encodeString(codigo);
           NumFac = cambiarCaracteres(NumFac);
           RFC_Emisor = cambiarCaracteres(RFC_Emisor);
           RFC_Receptor = cambiarCaracteres(RFC_Receptor);
           
-           File archivoRequest = new File(attachFolder + tabFactura.getTable().getId() + "/"
+           File archivoRequest = new File(attachFolder + table.getId() + Separador.substring(0, 1)
           + strInvoiceId + Separador.substring(0, 1) + "requestTimbrado" + factura.getDocumentNo()
           + ".xml");
           
@@ -571,20 +560,10 @@ public class facturaElectronica  extends DalBaseProcess {
           sb.append("</soapenv:Envelope>\n");
           encabezado.write(sb.toString());
           encabezado.flush();
-          // Termina crear el encapsualado SOAP
-          // log.info("CSM // RutaRequestTimbrado // " + ruta+"requestTimbrado"+NumFac+".xml");
-          // log.info("CSM // ArchivoRequestTimbrado // " +
-          // fileToString(ruta+"requestTimbrado"+NumFac+".xml"));
-          // log.info("cfe -- 24");
-          // Se sube el archiv que se creo
-          String strSubirArchivo = subirArchivo(strTab, factura, tabFactura);
-          // log.info("CSM // strSubirArchivo // " + strSubirArchivo);
-          // log.info("cfe -- 25");
-          // Llama a la funcion timbrar para hacer la conexion al PAC
-          // strTimbrar = timbrar("https://demotf.buzonfiscal.com/timbrado",ruta, NumFac,
-          // PasswordPAC, archivoPac);
-          // strTimbrar = timbrar("https://tf.buzonfiscal.com/timbrado",ruta, NumFac, PasswordPAC,
-          // archivoPac);
+          encabezado.close();
+          
+          
+          String strSubirArchivo = subirArchivo(table, factura);
           log.info("CSM // factura.getClient().getFetUrltimbrado() // "
               + factura.getClient().getFetUrltimbrado());
           
@@ -607,24 +586,17 @@ public class facturaElectronica  extends DalBaseProcess {
             // los attributos
             // extraeTimbrado.timbra(ruta,NumFac);
 
-            extraeTimbrado timbrado = new extraeTimbrado(new File(attachFolder + "318/"
-                + strInvoiceId +"/" + "Timbrado" + factura.getDocumentNo()
+            extraeTimbrado timbrado = new extraeTimbrado(new File(attachFolder + "318"+ Separador.substring(0, 1)
+                + strInvoiceId +Separador.substring(0, 1)+ "Timbrado" + factura.getDocumentNo()
                 + ".xml"));
             
-            log.info("El lugar donde esta extraendo la factura es"+ attachFolder + "318/"
-                + strInvoiceId + "/" + "Timbrado" + factura.getDocumentNo()
+            log.info("El lugar donde esta extraendo la factura es"+ attachFolder + "318"+ Separador.substring(0, 1)
+                + strInvoiceId + Separador.substring(0, 1)+ "Timbrado" + factura.getDocumentNo()
                 + ".xml");
 
             ObjectFactory of = new ObjectFactory();
 
             TimbreFiscalDigital timbre = of.createTimbreFiscalDigital();
-
-            log.info(timbrado.get_Fechatimbrado());
-            log.info(timbrado.get_noCertificadoSAT());
-            log.info(timbrado.get_selloCFD());
-            log.info(timbrado.get_selloSAT());
-            log.info(timbrado.get_uuid());
-            log.info(timbrado.get_version());
 
             java.util.Date dateTimbrado = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
                 .parse(timbrado.get_Fechatimbrado());
@@ -653,7 +625,7 @@ public class facturaElectronica  extends DalBaseProcess {
 	      //Comprobante sellado2 = cfdTimbrado.sellarComprobante(key, cert);
 	      cfdTimbrado.validar();
 	      cfdTimbrado.verificar();
-	            cfdTimbrado.guardar(new FileOutputStream(new File(attachFolder + tabFactura.getTable().getId() + "/" + strInvoiceId + Separador.substring(0,1) + factura.getDocumentNo() + ".xml")));
+	            cfdTimbrado.guardar(new FileOutputStream(new File(attachFolder + table.getId() + Separador.substring(0, 1)+ strInvoiceId + Separador.substring(0,1) + factura.getDocumentNo() + ".xml")));
 	      
 	      String facturaStringCarlos = convertXMLFileToString(ruta + NumFac + ".xml");
 	      
@@ -677,28 +649,6 @@ public class facturaElectronica  extends DalBaseProcess {
 	      
 	      String xmlFinal = v_headerXML + v_antesNamespace + v_namespace + v_timbrado + "    " + v_despuesNamespace;
 	      log.info("xmlFinal: " + xmlFinal);
-	    
-	      /*String xmlFinal = SqlComplemento.devuelveComplemento(this, facturaStringCarlos, 
-								      timbrado.get_Fechatimbrado(),
-								      timbrado.get_noCertificadoSAT(),
-								      timbrado.get_selloCFD(),
-								      timbrado.get_selloSAT(),
-								      timbrado.get_uuid(),
-								      timbrado.get_version());*/
-	    
-            /*String antesComplemento = facturaStringCarlos.substring(0,
-                facturaStringCarlos.indexOf("<cfdi:Complemento/>"));
-                
-            String despuesComplemento = facturaStringCarlos.substring(
-                facturaStringCarlos.indexOf("<cfdi:Complemento/>") + 19,
-                facturaStringCarlos.length());
-                
-            String complementoStringCarlos = "<cfdi:Complemento>\n" + "        "
-                + nodeToString(tfdMarshalled) + "\n    </cfdi:Complemento>";
-                
-            log.info("CSM > CSALINAS > complementoStringCarlos // " + complementoStringCarlos);
-            
-            //String resultadoXMLFinal = antesComplemento + complementoXSQL + despuesComplemento;*/
 
             File renombrarXML = new File(ruta + NumFac + ".xml");
             File renombrarAXML = new File(ruta + NumFac + "-respaldo.xml");
@@ -718,8 +668,8 @@ public class facturaElectronica  extends DalBaseProcess {
             // attributos
             extraeCER.extrae(ruta, NumFac);
             // log.info("cfe -- 27");
-            String rutaArchivoTimbrado = attachFolder + "318/" + strInvoiceId
-                + "/" + "Timbrado" + factura.getDocumentNo() + ".xml";
+            String rutaArchivoTimbrado = attachFolder + "318"+ Separador.substring(0, 1) + strInvoiceId
+                + Separador.substring(0, 1)+ "Timbrado" + factura.getDocumentNo() + ".xml";
             File archivoTimbradoNuevo = new File(rutaArchivoTimbrado);
             // Guarda el selloSAT en un Campo de Openbravo
             factura.setFetSellosat(getValuefromXML(archivoTimbradoNuevo, "selloSAT"));
@@ -736,7 +686,7 @@ public class facturaElectronica  extends DalBaseProcess {
             factura.setFetFoliofiscal(getValuefromXML(archivoTimbradoNuevo, "UUID"));
             
             
-            String rutaComprobanteNueva = attachFolder + "318/" + strInvoiceId
+            String rutaComprobanteNueva = attachFolder + "318"+ Separador.substring(0, 1) + strInvoiceId
                 + Separador.substring(0, 1) + factura.getDocumentNo() + ".xml";
             FileInputStream fisComprobanteNuevo = new FileInputStream(
                 new File(rutaComprobanteNueva));
@@ -860,17 +810,18 @@ public class facturaElectronica  extends DalBaseProcess {
 
   }
 
-  public String subirArchivo(String strTab, Invoice factura,
-      Tab tabFactura) throws IOException, ServletException {
+  public String subirArchivo(Table table, Invoice factura) throws IOException, ServletException {
     try {
       OBContext.setAdminMode(true); // Para poder crear el Attachment
 
-      final Attachment archivoDAL = OBProvider.getInstance().get(Attachment.class);
+      Attachment archivoDAL = OBProvider.getInstance().get(Attachment.class);
       // Se agregan las propiedades del attachment
       archivoDAL.setClient(factura.getClient());
       archivoDAL.setOrganization(factura.getOrganization());
       archivoDAL.setActive(true);
-      archivoDAL.setCreationDate(new Date());
+      String path = table.getId() + Separador.substring(0, 1)+ factura.getId();
+      archivoDAL.setPath(path);
+      archivoDAL.setCreationDate(new Date());           
       archivoDAL.setUpdated(new Date());
       archivoDAL.setCreatedBy(factura.getCreatedBy());
       archivoDAL.setUpdatedBy(factura.getUpdatedBy());
@@ -880,11 +831,13 @@ public class facturaElectronica  extends DalBaseProcess {
                            // subiendo con la secuencia 10.
       archivoDAL.setSequenceNumber(secuencia);
       archivoDAL.setText("Factura electrónica validada correctamente");
-      archivoDAL.setTable(tabFactura.getTable());
+      archivoDAL.setTable(table);
       archivoDAL.setRecord(factura.getId());
       // Se guarda el attachment
       OBDal.getInstance().save(archivoDAL); // Guarda el attachment
       OBDal.getInstance().flush();
+      
+      archivoXML=archivoDAL;
 
       
 

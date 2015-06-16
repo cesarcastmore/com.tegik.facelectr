@@ -66,17 +66,7 @@ public class CreateElectronicInvoice extends DalBaseProcess {
       
       
       //Crear el comprobante con un serivicio de timbrado
-      GenerateFileXML generadorCFDI = new GenerateCDFI();
-      
-      //Si no es timbrar cambiar a servicio de generado de CDFI automatico, el XML no es necesario generarlo
-      if(!infoTimbrado.isTimbrar()){
-        
-        String nameClassTimbrado=Finder.getJavaClass(infoTimbrado.getPactimbrado());
-        Validate.validateJavaGenedoAutCFDI(nameClassTimbrado);
-           
-        generadorCFDI = (GenerateFileXML) Class.forName(nameClassTimbrado).newInstance();
-      }
-      
+      GenerateFileXML generadorCFDI = loadGeneradorFileXML(infoTimbrado);
       File fileXML = generadorCFDI.createFileXML( invoice);
 
       Comprobante comprobante = (Comprobante) ConverterJAXB.converterToObject(Comprobante.class, fileXML);
@@ -158,8 +148,9 @@ public class CreateElectronicInvoice extends DalBaseProcess {
       
       List<File> archivos = Util.getFilesInvoice(invoice);
   
-      SendingEmail sendEmail = new SendingEmail(invoice, archivos);
-      sendEmail.sentInvoice();
+      //Para enviar el correo
+      SendingEmail sentEmail = new SendingEmail(invoice, archivos);
+      sentEmail.sentInvoice();
       
           
       //mensage final
@@ -184,6 +175,26 @@ public class CreateElectronicInvoice extends DalBaseProcess {
     
   }
   
+  
+  public GenerateFileXML loadGeneradorFileXML(InforTimbrado infoTimbrado) throws Exception{
+    
+    //Crear el comprobante con un serivicio de timbrado
+    GenerateFileXML generadorCFDI = new GenerateCDFI();
+    
+    //Si no es timbrar cambiar a servicio de generado de CDFI automatico, el XML no es necesario generarlo
+    if(!infoTimbrado.isTimbrar()){
+      
+      String nameClassTimbrado=Finder.getJavaClass(infoTimbrado.getPactimbrado());
+      Validate.validateJavaGenedoAutCFDI(nameClassTimbrado);
+         
+      generadorCFDI = (GenerateFileXML) Class.forName(nameClassTimbrado).newInstance();
+    }
+    
+    
+    return generadorCFDI;
+    
+  }
+    
   
 
 }

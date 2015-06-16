@@ -68,7 +68,8 @@ public class enviarFactura extends HttpSecureAppServlet {
       Invoice factura = OBDal.getInstance().get(Invoice.class, strInvoiceId);
       enviadorCorreos enviador = new enviadorCorreos();
       // ServletConfig config2 = ;
-      String respuestaEnvio = enviador.solicitarEnvio( factura, "Y", "Y");
+      String respuestaEnvio=""; 
+          //enviador.solicitarEnvio( factura, "Y", "Y");
       log.info("CSM>CORREOS -- " + respuestaEnvio);
       if (respuestaEnvio == "OK") {
         myMessage.setType("Success");

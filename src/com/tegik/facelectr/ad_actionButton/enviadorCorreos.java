@@ -1,66 +1,26 @@
 package com.tegik.facelectr.ad_actionButton;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.export.JExcelApiExporter;
-import net.sf.jasperreports.engine.export.JExcelApiExporterParameter;
 
 import org.apache.log4j.Logger;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Restrictions;
-import org.openbravo.base.ConfigParameters;
-import org.openbravo.base.secureApp.HttpSecureAppServlet;
-import org.openbravo.base.secureApp.VariablesSecureApp;
-import org.openbravo.base.session.OBPropertiesProvider;
 import org.openbravo.dal.core.OBContext;
 import org.openbravo.dal.service.OBCriteria;
 import org.openbravo.dal.service.OBDal;
-import org.openbravo.data.FieldProvider;
-import org.openbravo.database.ConnectionProvider;
-import org.openbravo.erpCommon.utility.JRFieldProviderDataSource;
-import org.openbravo.erpCommon.utility.JRFormatFactory;
-import org.openbravo.erpCommon.utility.PrintJRData;
-import org.openbravo.erpCommon.utility.Utility;
 import org.openbravo.erpCommon.utility.poc.EmailManager;
 import org.openbravo.model.common.enterprise.EmailServerConfiguration;
 import org.openbravo.model.common.invoice.Invoice;
-import org.openbravo.utils.FileUtility;
 import org.openbravo.utils.FormatUtilities;
-import org.openbravo.utils.Replace;
-import org.openbravo.scheduling.ProcessBundle;
-import org.openbravo.service.db.DalConnectionProvider;
-import org.openbravo.base.provider.OBProvider;
-import org.openbravo.model.ad.utility.Attachment;
-import org.openbravo.model.ad.ui.Tab;
-import org.openbravo.client.kernel.RequestContext;
 
 import com.tegik.facelectr.data.MensajeCorreo;
-import com.tegik.facelectr.utilidad.Util;
+import com.tegik.facelectr.email.SendGrid;
+import com.tegik.facelectr.email.SendGrid.Email;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -74,7 +34,7 @@ public class enviadorCorreos  {
   private boolean solicitarEnvio=true;
 
   public String enviaCorreo( Invoice factura, String enviarPDF,
-      String enviarXML)  throws Exception {
+      String enviarXML, File pdf, File xml)  throws Exception {
     
     
       OBContext.setAdminMode(true);      
@@ -85,16 +45,7 @@ public class enviadorCorreos  {
     
 
       String correoAlternativo = factura.getFetCorreoalternativo();
-      
-      //String correoAlternativo = prepararCorreos(correoAlternativo);
-
       String correoCliente = factura.getBusinessPartner().getFetEmail();
-      
-      //String correoCliente = prepararCorreos(correoCliente);
-
-      
-      //Crear archivo PDF
-      
       String correoElectronico = factura.getFETEmail();
       
       if(correoAlternativo == null && correoCliente ==null && correoElectronico == null ){
@@ -240,12 +191,15 @@ public class enviadorCorreos  {
     }
       
  
-      List<File> listaArchivos = Util.getFilesInvoice(factura);
+      List<File> listaArchivos = new ArrayList<File>();
+      listaArchivos.add(xml);
+      listaArchivos.add(pdf);
       
       if (Correo.equals("")) {
         return "El correo electrónico del receptor no es válido";
       }
       
+      /*
       EmailManager correo = new EmailManager();
 
       // correo.sendEmail(Servidor, Auth, Cuenta, Password, seguridad,Puerto, CuentaEnvio, Correo,
@@ -257,17 +211,42 @@ public class enviadorCorreos  {
       } catch(Exception e){
         log.info("password "+ Password + " usuario "+ CuentaEnvio);        
         throw new Exception(e.getMessage());
-      }
+      }*/
 
+      SendGrid sendgrid = new SendGrid("ccastillo", "Kopoyeba00");
+      
+      Email email = new Email();
+      
+      
+      String[] correos = new String[3];
+      correos[0]=correoAlternativo;
+      correos[1]=correoCliente;
+      correos[2]=correoElectronico;
+      
+      email.addTo(correos);
+      email.setFrom(Cuenta);
+      email.setSubject(asunto);
+      email.setText(mensaje);
+      
+      email.addAttachment(xml.getName(), xml);
+      email.addAttachment(pdf.getName(), pdf);
+      
+      sendgrid.send(email);
+
+
+      
+      
+      
+      
       OBContext.restorePreviousMode();
       return "OK";
   
   }
 
-  public String solicitarEnvio(Invoice factura, String enviarPDF, String enviarXML) throws Exception {
+  public String solicitarEnvio(Invoice factura, String enviarPDF, String enviarXML, File pdf, File xml) throws Exception {
       log.info("ENTRO A SOLICITAR ENVIO");
       OBDal.getInstance().refresh(factura);
-      String statusEnvio = enviaCorreo( factura, enviarPDF, enviarXML);
+      String statusEnvio = enviaCorreo( factura, enviarPDF, enviarXML,pdf, xml);
       log.info(statusEnvio);
       
       if (statusEnvio == "OK") {
