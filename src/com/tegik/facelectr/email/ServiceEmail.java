@@ -4,12 +4,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.openbravo.erpCommon.utility.poc.EmailManager;
 import org.openbravo.model.common.enterprise.EmailServerConfiguration;
 import org.openbravo.utils.FormatUtilities;
 
+import com.tegik.facelectr.data.InforTimbrado;
+import com.tegik.facelectr.email.sendgrid.EmailAppi;
+import com.tegik.facelectr.email.sendgrid.SendGrid;
+import com.tegik.facelectr.servicios.ConnectionException;
 import com.tegik.facelectr.utilidad.Validate;
 
 
@@ -20,9 +25,7 @@ public class ServiceEmail {
   
   List<String> correos = new ArrayList<String>();
   List<File> archivos;
-  
-  EmailServerConfiguration emailConfig;
-  
+    
   String mensaje="";
   String asunto="";
 
@@ -45,23 +48,8 @@ public class ServiceEmail {
   }
 
 
-  /**
-   * @return the emailConfig
-   */
-  public EmailServerConfiguration getEmailConfig() {
-    return emailConfig;
-  }
-
-
-  /**
-   * @param emailConfig the emailConfig to set
-   */
-  public void setEmailConfig(EmailServerConfiguration emailConfig) {
-    this.emailConfig = emailConfig;
-  }
   
-  
-  public void send() throws Exception{
+  public void send(EmailServerConfiguration emailConfig) throws Exception{
     
     String servidor = emailConfig.getSmtpServer();   
   
@@ -94,6 +82,43 @@ public class ServiceEmail {
     
     
     
+    
+  }
+  
+  
+  public void send(InforTimbrado infoTimbrado) throws Exception{
+    
+    if(infoTimbrado.getUsernamegrid() == null){
+      throw new Exception("@FET_NoUserNameGrid@");
+    } else if(infoTimbrado.getPassgrid() == null){
+      throw new Exception("@FET_NoPassGrid@");
+    }else if(infoTimbrado.getFromgrid() == null){
+      throw new Exception("@FET_NoFromGrid@");
+    }
+     
+    SendGrid sendgrid = new SendGrid(infoTimbrado.getUsernamegrid(), infoTimbrado.getPassgrid() );
+
+    EmailAppi email = new EmailAppi();
+
+    // Parametros de configuracion de
+    email.setFrom(infoTimbrado.getFromgrid());
+    email.setFromName(infoTimbrado.getFromnamegrid());
+    
+    email.setSubject(asunto);
+    email.setText(mensaje);
+
+    // Correos
+    for (String co : correos) {
+      email.addTo(co);
+
+    }
+
+    // Archivos
+    for(File file: archivos){
+      email.addFile(file);
+    }
+
+    sendgrid.sent(email);
     
   }
 

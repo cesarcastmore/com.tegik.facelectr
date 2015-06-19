@@ -1,6 +1,11 @@
 package com.tegik.facelectr.servicios;
 
 import java.util.HashMap;
+import java.io.File;
+import java.util.List;
+import java.util.ArrayList;
+
+
 
 public class Request{
   
@@ -17,12 +22,15 @@ public class Request{
   String contrasenia;
   String url;
   String soapAction;
+  String paramsCadena;
+  List<File> files=new ArrayList<File>();
 
 
 
   
   public Request(){
     param = new HashMap<String, String>();
+   files=new ArrayList<File>();
   }
   
   /**
@@ -129,6 +137,8 @@ public class Request{
   public void setSoapAction(String soapAction) {
     this.soapAction = soapAction;
   }
+
+
   
   
   

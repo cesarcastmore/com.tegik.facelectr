@@ -28,10 +28,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -105,10 +101,8 @@ public final class creadorFacturas {
       i++;
 
     if (i == factura.getDocumentNo().length() || i == 0) {
-      // log.info("No se hará nada para la serie");
       comp.setFolio(factura.getDocumentNo());
     } else {
-      // log.info("Se debería crear la serie en el archivo de factura electrónica");
       comp.setSerie(factura.getDocumentNo().substring(0, i));
       comp.setFolio(factura.getDocumentNo().substring(i));
     }
@@ -181,18 +175,12 @@ public final class creadorFacturas {
     boolean notDesgIEPS =  (!( factura.getBusinessPartner().isFetDesglosarieps()== null ?
         true : factura.getBusinessPartner().isFetDesglosarieps()));
 
-     //isFetDesglosarieps == true desglozar en impuestos  si es isFetDesglosarieps== false desglozar en conceptos    
-if(factura.getBusinessPartner().isFetDesglosarieps()== null) log.info("ESTA EN VACIO");
-if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA EN VACIO Y TIENE UN VALOR DE" + factura.getBusinessPartner().isFetDesglosarieps());
-
-//¿Como voy a saber que tiene ieps en la factura?
+ 
     if (notDesgIEPS)
     {
       BigDecimal totalConceptos = BigDecimal.ZERO;
- log.info("ENTROOOOOOO A AQUI CESAR PON ATENCION AQUIIIIIIIIIIII");     
       for (Concepto c : comp.getConceptos().getConcepto())
       {
-	  log.info("Importe del concepto -- " + c.getImporte().toString());
 	  totalConceptos = totalConceptos.add(c.getImporte());
       }
       
@@ -204,10 +192,6 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
     }
 
     OBContext.restorePreviousMode();
-
-    // log.info("ENCABEZADO7");
-
-    // return comp;
 
   }
 
@@ -355,7 +339,6 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
         String descripcionExtra = "";
         if (linea.getDescription() != null) {
           if (!linea.getDescription().equals("CARGO POR USADO")) {
-            // log.info(linea.getLineNo().toString() + " -- " + linea.getDescription());
             descripcionExtra = linea.getDescription();
           }
 
@@ -407,18 +390,13 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
               c.getInformacionAduanera().add(pedimento);
             }
           } catch (Exception e) {
-            // log.info(e.getMessage());
           }
         }
 
-        // log.info("CSM // PEDIMENTOS // linea.getProduct().getAttributeSet()" +
-        // linea.getProduct().getAttributeSet().getName());
         if (linea.getProduct() != null) {
           if (linea.getProduct().getAttributeSet() != null) {
             if (linea.getProduct().getAttributeSet().isFetInfoaduanera()) {
-              // log.info("CSM // PEDIMENTOS // " + "SI APLICA INFORMACIÓN ADUANERA");
               if (linea.getAttributeSetValue() != null) {
-                // log.info("CSM // PEDIMENTOS // " +
                 // "SI HAY INFORMACIÓN DEL ATRIBUTO PARA INFORMACIÓN ADUANERA");
                 TInformacionAduanera infoAdu = new TInformacionAduanera();
 
@@ -429,15 +407,8 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
 
                 for (AttributeInstance atributo : attrList.list()) {
 
-                  // log.info("CSM // PEDIMENTOS // atributo.getAttribute().getFetAtributopedimento() "
-                  // + atributo.getAttribute().getFetAtributopedimento());
-                  // log.info("CSM // PEDIMENTOS // atributo.getValue() " +
-                  // atributo.getSearchKey());
 
                   if (atributo.getAttribute().getFetAtributopedimento().equals("F")) {
-
-                    // log.info("CSM // PEDIMENTOS // atributo.getAttribute().getFetFormatofecha() "
-                    // + atributo.getAttribute().getFetFormatofecha());
 
                     try {
                       DateFormat df = new SimpleDateFormat(atributo.getAttribute()
@@ -467,7 +438,6 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
                       StringWriter wPedmiento = new StringWriter();
                       excFechaPedimento.printStackTrace(new PrintWriter(wPedmiento));
                       String errorPedimento = wPedmiento.toString();
-                      // log.info(errorPedimento);
 
                     }
                   }
@@ -599,18 +569,13 @@ if(factura.getBusinessPartner().isFetDesglosarieps() != null ) log.info("NO ESTA
 
       if (!hayError && objetoAddenda != null) {
         for (int pos = 0; pos < objetoAddenda.size(); pos++) {
-          // log.info ("ContadorObjetosAddenda // " + pos);
           addenda.getAny().add(objetoAddenda.get(pos));
         }
       }
-      // PROPERTY_DMPRODSUBFAMILIA
-      // getComprasSubfamilia
       return addenda;
     } catch (Exception e) {
       StringWriter w = new StringWriter();
       e.printStackTrace(new PrintWriter(w));
-      String errorAddenda = w.toString();
-      // log.info(errorAddenda);
       this.comp = null;
       this.hayError = true;
       this.mensajeError = "Hubo un error al llamar al módulo de addendas, contacte al personal correspondiente";

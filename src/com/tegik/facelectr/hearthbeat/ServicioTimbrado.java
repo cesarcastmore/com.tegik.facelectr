@@ -55,7 +55,7 @@ public class ServicioTimbrado {
       request.setMethod(Request.POST);
       request.setBody(info);
       
-      Connection conn = Connection.getInstance();
+      Connection conn = new Connection();
       conn.setConnectTimeout(2000);
       conn.setReadTimeout(2000);
       

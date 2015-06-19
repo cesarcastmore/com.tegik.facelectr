@@ -1,14 +1,21 @@
 package com.tegik.facelectr.servicios;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.apache.http.client.methods.HttpPost;
 
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.HostnameVerifier;
@@ -20,7 +27,6 @@ import org.apache.log4j.Logger;
 
 
 public class Connection {
-  private static Connection uniqueInstance;
   
   private static final Logger log = Logger.getLogger(Connection.class);
 
@@ -28,16 +34,15 @@ public class Connection {
   int readTimeout=0;
   SSLSocketFactory sslSocket;
   HostnameVerifier hostname;
+  private final String boundary;
+  private static final String LINE_FEED = "\r\n";
 
  
   
-  private Connection(){
+  public  Connection(){
+    boundary= "===" + System.currentTimeMillis() + "===";
 
-  }
-  
-  public static synchronized Connection getInstance(){
          
-    return new Connection();
   }
   
   
@@ -45,6 +50,7 @@ public class Connection {
     
     Response response = new Response();
     java.net.HttpURLConnection httpCon=null;
+    
 
     try{
       
@@ -59,24 +65,25 @@ public class Connection {
       while (it.hasNext()) {
           Map.Entry pair = (Map.Entry)it.next();
           parametros=parametros + pair.getKey() +  "=" + pair.getValue()+"&";
-          it.remove(); // avoids a ConcurrentModificationException
+          it.remove();
       }
       parametros=parametros.substring(0, parametros.length() -1);
       
       url=url+parametros;
-    }
+    } 
     
     url = url.trim();
-    log.info("EL URL ES "+url);
+    
     
     URL endURL = new URL(url);
     httpCon = (java.net.HttpURLConnection) endURL.openConnection();
     
- 
+
     
     httpCon.setDoOutput(true);
     httpCon.setDoInput(true);
     
+
     httpCon.setDoOutput(true);
     if(request.getContentType()!= null)
       httpCon.setRequestProperty( "Content-Type", request.getContentType());
@@ -86,10 +93,12 @@ public class Connection {
     
     httpCon.setRequestMethod(request.getMethod());
 
+
     if(connectTimeout > 0)
       httpCon.setConnectTimeout(connectTimeout);
     if(readTimeout > 0)
       httpCon.setReadTimeout(readTimeout);
+
 
 
     
@@ -101,19 +110,17 @@ public class Connection {
       
     }
     
-    if(request.getBody() != null){
 
-      
-      log.info("ESTA ESCRIBIENDO EL REQUEST "+ request.getBody());
-      
-      OutputStreamWriter out = new OutputStreamWriter(
-        httpCon.getOutputStream());
-      
-      out.write(request.getBody());
-      out.flush();
+    if(request.getBody() != null ){
+
+
+      OutputStreamWriter outputStream =new OutputStreamWriter(httpCon.getOutputStream());
+      outputStream.write(request.getBody());
+      outputStream.flush();
       
     }
     
+
     //Preparamos el response
     response = new Response();    
     
@@ -150,7 +157,6 @@ public class Connection {
       
     } catch (IOException e) {
       
-      // TODO Auto-generated catch block
       httpCon.disconnect();
       throw new ConnectionException(e.getMessage());
 
@@ -231,7 +237,6 @@ public class Connection {
     if(request.getBody() != null){
 
       
-      log.info("ESTA ESCRIBIENDO EL REQUEST "+ request.getBody());
       
       OutputStreamWriter out = new OutputStreamWriter(
           httpsCon.getOutputStream());

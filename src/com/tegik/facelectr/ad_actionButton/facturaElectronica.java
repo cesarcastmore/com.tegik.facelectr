@@ -92,8 +92,6 @@ public class facturaElectronica  extends DalBaseProcess {
     
     String invoiceId = (String) bundle.getParams().get("C_Invoice_ID");  
     
-    log.info( bundle.getParamsDeflated());
-
 
     if (1 ==1) {
 
@@ -134,7 +132,6 @@ public class facturaElectronica  extends DalBaseProcess {
         if (requestTest.exists()) {
           if (requestTest.delete()) {
             Boolean bool_requestTest = requestTest.delete();
-            log.info("RESULTADO DEL REQUESTTEST.DELETE" + bool_requestTest.toString());
           }
 
         }
@@ -142,7 +139,6 @@ public class facturaElectronica  extends DalBaseProcess {
         if (XMLTest.exists()) {
           if (XMLTest.delete()) {
             Boolean bool_XMLTest = XMLTest.delete();
-            log.info("RESULTADO DEL XMLTest.DELETE" + bool_XMLTest.toString());
           }
         }
       } else {
@@ -257,18 +253,15 @@ public class facturaElectronica  extends DalBaseProcess {
         return myMessage2;
 
       }
-      log.info("MENSAGE 150" + strTimbrar );
       // run the calculation
       if (banderaSeguir) {
         OBError myMessage = creaFacturaElectronica( invoiceId, table);
  
         if (strTimbrar.equals("OK") && myMessage.getType() == "Success") {
-          // log.info("dopost -- 5");
           HashMap<String, Object> parameters = new HashMap<String, Object>();
           parameters.put("DOCUMENT_ID", invoiceId);
  
           if (strTimbrar == "OK") {
-            // log.info("dopost -- 8");
 
             try {
               OBContext.setAdminMode(true);
@@ -299,7 +292,6 @@ public class facturaElectronica  extends DalBaseProcess {
               StringWriter w = new StringWriter();
               e.printStackTrace(new PrintWriter(w));
               String errorfactura = w.toString();
-              log.info("CSM>CORREOS -- " + errorfactura);
               myMessage.setType("Warning");
               OBContext.restorePreviousMode();
               myMessage.setTitle("Se ha creado existosamente la Factura Electrónica");
@@ -332,7 +324,6 @@ public class facturaElectronica  extends DalBaseProcess {
     
     try {
 
-      // log.info("cfe -- 1");
       // Cargas la factura del DAL de Openbravo
       OBContext.setAdminMode(true);
       Invoice factura = OBDal.getInstance().get(Invoice.class, strInvoiceId);
@@ -344,7 +335,6 @@ public class facturaElectronica  extends DalBaseProcess {
       myMessage.setMessage("Mi mensaje de prueba");
       myMessage.setType("Error");
       myMessage.setTitle("Error en la creación de la factura electrónica");
-      // log.info("cfe -- 2");
       String tipoDoc = "";
       String nombreCer = "", nombreKey = "", nombrePfx = ""; // Inicializacion archivo .cer .key
                                                              // .pfx
@@ -378,7 +368,6 @@ public class facturaElectronica  extends DalBaseProcess {
                                                                                  // documento de
                                                                                  // openbravo
       rutaAttach = table.getId() + Separador.substring(0, 1)+ strInvoiceId;
-      // log.info("cfe -- 6");
       File archivoTimbrado = new File(attachFolder + table.getId() + Separador.substring(0, 1)
           + strInvoiceId + Separador.substring(0, 1) + "Timbrado" + factura.getDocumentNo()
           + ".xml"); // Liga del archivo en tipo File
@@ -403,7 +392,6 @@ public class facturaElectronica  extends DalBaseProcess {
           attachmentList.add(Expression.eq(Attachment.PROPERTY_RECORD, orgPadre.getId()));
 
           for (Attachment attachmentUd : attachmentList.list()) {
-            // log.info("CSM > Entro a la lista -- ");
             if (attachmentUd.getName().indexOf(".cer") != -1) {
               nombreCer = attachmentUd.getName();
               pathCer = attachmentUd.getPath();
@@ -445,7 +433,6 @@ public class facturaElectronica  extends DalBaseProcess {
             throw new Exception("@FET_NoArchivoKEY@");
           }
 
-          // log.info("cfe -- 16");
           // Se cierra Busca el archivo .cer y .key
 
           // Busca el archivo .pfx para timbrar
@@ -456,17 +443,12 @@ public class facturaElectronica  extends DalBaseProcess {
           }
           // Se cierra Busca el archivo .pfx para timbrar
 
-          // log.info("cfe -- 17");
 
           // Verifica si es una factura o una nota de credito
           if (Documento.equals("ARC"))
             tipoDoc = "N";
           else
             tipoDoc = "F";
-          // log.info("cfe -- 18");
-
-          // log.info("CSM // tipoDoc // " + tipoDoc);
-
           // termina verifica si es una factura o una nota de credito
           creadorFacturas comprobante = new creadorFacturas(strInvoiceId, tipoDoc); // Crea la
                                                                                     // Cadena
@@ -474,7 +456,6 @@ public class facturaElectronica  extends DalBaseProcess {
                                                                                     // la Factura
           Comprobante comp = null;
           if (comprobante.getHayError()) {
-            log.info("Error en la creación del comprobante");
             myMessage.setMessage(comprobante.getMensajeError());
             myMessage.setType("Error");
             myMessage.setTitle("Error en la creación de la factura electrónica");
@@ -483,14 +464,12 @@ public class facturaElectronica  extends DalBaseProcess {
             comp = comprobante.getComprobante();
           }
 
-          log.info("FACTURAELECTRONICA.JAVA");
 
           CFDv32 cfd = null;
 
           String paqueteJavaAddenda = null;
 
           if (addendasInstaladas()) {
-            log.info("El módulo de addendas está instfalado");
 
             Class claseAddenda = Class.forName("com.tegik.addenda.module.proc.manejadorAddenda");
             Constructor<Object> ctor = claseAddenda.getDeclaredConstructor(String.class,
@@ -499,7 +478,6 @@ public class facturaElectronica  extends DalBaseProcess {
             paqueteJavaAddenda = (String) claseAddenda.getMethod("getPaqueteJavaAddenda").invoke(
                 instance);
 
-            log.info("paqueteJava Objeto ADDENDA " + paqueteJavaAddenda);
 
             if (paqueteJavaAddenda != null) {
               cfd = new CFDv32(comp, paqueteJavaAddenda);
@@ -508,13 +486,9 @@ public class facturaElectronica  extends DalBaseProcess {
             }
 
           } else {
-            log.info("El módulo de addendas NO está instalado");
             cfd = new CFDv32(comp);
           }
 
-          log.info("CFD");
-
-          // log.info("cfe -- 19");
 
           PrivateKey key = KeyLoader.loadPKCS8PrivateKey(new FileInputStream(archivoKey),
               PasswordFiel); // Carga la llave privada
@@ -543,7 +517,6 @@ public class facturaElectronica  extends DalBaseProcess {
           + strInvoiceId + Separador.substring(0, 1) + "requestTimbrado" + factura.getDocumentNo()
           + ".xml");
           
-          log.info("NOMBRE DEL ARCHIVO  " + archivoRequest.getName());
           System.setProperty("file.encoding", "UTF-8");
           PrintWriter encabezado = new PrintWriter(archivoRequest, "UTF-8");
           
@@ -564,8 +537,6 @@ public class facturaElectronica  extends DalBaseProcess {
           
           
           String strSubirArchivo = subirArchivo(table, factura);
-          log.info("CSM // factura.getClient().getFetUrltimbrado() // "
-              + factura.getClient().getFetUrltimbrado());
           
           if(factura.getClient().getFetUrltimbrado() == null ){
             throw new Exception("@FET_NoEndURLServiceTimbrado@");
@@ -578,8 +549,6 @@ public class facturaElectronica  extends DalBaseProcess {
 
           // strTimbrar = "OK";
           String mensaje = strSubirArchivo + " -- " + strTimbrar;
-          // log.info("CSM // strSubirArchivo // " + strSubirArchivo);
-          // log.info("cfe -- 26");
           if (strTimbrar == "OK") {
 
             // Se manda a llamar a la funcion extraeTimbrado para que extraiga del archivo Timbrado
@@ -589,10 +558,6 @@ public class facturaElectronica  extends DalBaseProcess {
             extraeTimbrado timbrado = new extraeTimbrado(new File(attachFolder + "318"+ Separador.substring(0, 1)
                 + strInvoiceId +Separador.substring(0, 1)+ "Timbrado" + factura.getDocumentNo()
                 + ".xml"));
-            
-            log.info("El lugar donde esta extraendo la factura es"+ attachFolder + "318"+ Separador.substring(0, 1)
-                + strInvoiceId + Separador.substring(0, 1)+ "Timbrado" + factura.getDocumentNo()
-                + ".xml");
 
             ObjectFactory of = new ObjectFactory();
 
@@ -642,13 +607,10 @@ public class facturaElectronica  extends DalBaseProcess {
 	      String v_version = "version=\"" + timbrado.get_version() + "\"";
 	      
 	      String v_timbrado = v_version + " " + v_uuid + " " + v_fecha + " " + v_sellocfd + " " + v_certificadosat + " " + v_sellosat + "/>";
-	      log.info("v_timbrado: " + v_timbrado);
 	      
 	      String v_despuesNamespace = facturaStringCarlos.substring(facturaStringCarlos.indexOf("</cfdi:Complemento>"), facturaStringCarlos.length());
-	      log.info("v_despuesNamespace: " + v_despuesNamespace);
 	      
 	      String xmlFinal = v_headerXML + v_antesNamespace + v_namespace + v_timbrado + "    " + v_despuesNamespace;
-	      log.info("xmlFinal: " + xmlFinal);
 
             File renombrarXML = new File(ruta + NumFac + ".xml");
             File renombrarAXML = new File(ruta + NumFac + "-respaldo.xml");
@@ -667,7 +629,6 @@ public class facturaElectronica  extends DalBaseProcess {
             // Se manda a llamar a la funcion extraeCER para que extraiga del archivo Original los
             // attributos
             extraeCER.extrae(ruta, NumFac);
-            // log.info("cfe -- 27");
             String rutaArchivoTimbrado = attachFolder + "318"+ Separador.substring(0, 1) + strInvoiceId
                 + Separador.substring(0, 1)+ "Timbrado" + factura.getDocumentNo() + ".xml";
             File archivoTimbradoNuevo = new File(rutaArchivoTimbrado);
@@ -737,7 +698,6 @@ public class facturaElectronica  extends DalBaseProcess {
           } else {
             if (strSubirArchivo.equals("OK")){
               myMessage.setMessage("Error timbrado: " + strTimbrar);
-              log.info("MENSAGE200" + strTimbrar );
             }
             else if (strTimbrar.equals("OK"))
               myMessage.setMessage("Error Subir archivo: " + strSubirArchivo);
@@ -790,7 +750,6 @@ public class facturaElectronica  extends DalBaseProcess {
       
       if(e.getMessage() != null ){
         myMessage.setMessage(e.getMessage());
-        log.info(errorfactura);
         return myMessage;          
         
       }else if(errorfactura != null) {
@@ -857,7 +816,6 @@ public class facturaElectronica  extends DalBaseProcess {
 
 
       Client client = new Client();
-      System.setProperty("javax.net.debug", "all");
       String retorno = client.call(endpointAddress, ruta, NumFac, PasswordPAC, archivoPac);
       return retorno;
 

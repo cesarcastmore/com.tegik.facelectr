@@ -4,12 +4,14 @@ import mx.bigdata.sat.cfdi.v32.schema.Comprobante.Addenda;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.openbravo.base.session.OBPropertiesProvider;
@@ -374,10 +376,26 @@ public class Util {
       
       
     }
-        
-    
-    
+            
     
   }
+  
+  public static String removeAccents(String str){
+    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
+    log.info(nfdNormalizedString);
+    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+    return pattern.matcher(nfdNormalizedString).replaceAll("");
+    
+    } 
+  
+  
+  public static String normalizerAccent(String str){
+    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
+    return nfdNormalizedString;
+    
+    } 
+  
+    
+
 
 }
