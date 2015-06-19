@@ -1079,7 +1079,7 @@ $F{mes} == 11 ? "Noviembre" : "Diciembre"]]></variableExpression>
 					<textElement verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="8" isBold="true"/>
 					</textElement>
-					<text><![CDATA[   Sello Digital del Emisor]]></text>
+					<text><![CDATA[   Sello Digital del Emisor123123]]></text>
 				</staticText>
 				<line>
 					<reportElement x="265" y="24" width="280" height="1" forecolor="#808080"/>
@@ -1165,7 +1165,8 @@ $F{mes} == 11 ? "Noviembre" : "Diciembre"]]></variableExpression>
 				</textField>
 				<image scaleImage="RealSize" hAlign="Center" vAlign="Middle">
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="2" y="14" width="110" height="86"/>
-					<imageExpression class="net.sf.jasperreports.engine.JRRenderable"><![CDATA[new com.barcodelib.barcode.BarcodeJasperRenderer(com.barcodelib.barcode.BarcodeJasperFactory.createQRCode($F{strqrcode}, 0, 1,0,(float)(3.0),(float)(0.0)))]]></imageExpression>
+					<!--<imageExpression class="net.sf.jasperreports.engine.JRRenderable"><![CDATA[new com.barcodelib.barcode.BarcodeJasperRenderer(com.barcodelib.barcode.BarcodeJasperFactory.createQRCode($F{strqrcode}, 0, 1,0,(float)(3.0),(float)(0.0)))]]></imageExpression>-->
+					<imageExpression class="java.awt.Image"><![CDATA[com.google.zxing.client.j2se.MatrixToImageWriter.toBufferedImage(new com.google.zxing.qrcode.QRCodeWriter().encode($F{strqrcode},com.google.zxing.BarcodeFormat.QR_CODE, 300, 300))]]></imageExpression>
 				</image>
 			</frame>
 			<textField isStretchWithOverflow="true" pattern="$ #,##0.00">
