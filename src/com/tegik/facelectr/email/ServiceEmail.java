@@ -74,10 +74,7 @@ public class ServiceEmail {
     correosAdjuntados.substring(0, correosAdjuntados.length()-1);
     
     
-    EmailManager emailManager = new EmailManager();
-    
-    
-    emailManager.sendEmail(servidor, auth, cuenta, password, seguridad, puerto, cuentaEnvio, correosAdjuntados,
+    EmailManager.sendEmail(servidor, auth, cuenta, password, seguridad, puerto, cuentaEnvio, correosAdjuntados,
         "", "", cuentaEnvio, asunto, mensaje, null, archivos, new Date(), null);
     
     

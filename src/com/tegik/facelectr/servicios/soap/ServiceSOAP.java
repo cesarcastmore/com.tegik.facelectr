@@ -216,7 +216,7 @@ public abstract class ServiceSOAP {
     request.setUrl(config.getUrl());
     request.setSoapAction(config.getSoapAction());
     
-    Connection conn= Connection.getInstance();
+    Connection conn= new Connection();
     conn.setConnectTimeout(config.getConnectionTimeOut());
     conn.setReadTimeout(config.getReadTimeOut());
     conn.setSslSocket(config.getSslSocket());

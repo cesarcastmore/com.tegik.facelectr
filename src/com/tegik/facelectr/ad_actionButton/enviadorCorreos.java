@@ -102,8 +102,10 @@ public class enviadorCorreos {
           + factura.getOrganization().getName();
 
     }
+    
+    boolean isSendGrid =factura.getClient().isFetEnviargrid() ==null ? false :  factura.getClient().isFetEnviargrid();
 
-    if (factura.getClient().isFetEnviargrid()) {
+    if (isSendGrid) {
       
       if(factura.getClient().getFetUsuariogrid() == null){
         throw new Exception("FET_NoUserNameGrid");
