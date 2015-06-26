@@ -38,6 +38,8 @@ public class Client {
   public void initialize() throws ServiceException {
     Service service = new Service(); // initializing a dummy service
     call = (Call) service.createCall(); // initializing a call
+    
+    
 
     // Setting Soap Action property
     call.setUseSOAPAction(true);
@@ -91,23 +93,21 @@ public class Client {
       }
 
       SOAPEnvelope soapEnvelope = new SOAPEnvelope(in);
+      soapEnvelope.setEncodingStyle("UTF-8");
       // SOAPEnvelope soapEnvelope = new SOAPEnvelope(new
       // ByteArrayInputStream(buf.toString().trim().getBytes()));
 
       // Setting End point Address
       call.setTargetEndpointAddress(endpointAddress);
-      log.info("TIMBRE 2");
-
+      call.setEncodingStyle("UTF-8");      
 
       // Calling the webservice with the defined soap envelope
       SOAPEnvelope response = call.invoke(soapEnvelope);
 
-      log.info("TIMBRE 3");
       out = new FileOutputStream(ruta + "Timbrado" + NumFac + ".xml", true); // Se crea el archivo
                                                                              // donde se guardará la
                                                                              // informacion que se
                                                                              // reciba del PAC
-      log.info("TIMBRE 4");
 
       out.write(response.toString().getBytes());
       out.flush();

@@ -48,6 +48,7 @@ FROM c_invoicelinetax ilt
   INNER JOIN c_tax tax
           ON ilt.c_tax_id = tax.c_tax_id
          AND COALESCE(tax.em_fet_isieps,'N') = 'Y'
+	 AND ilt.c_invoice_id = $P{DOCUMENT_ID}
          GROUP BY c_invoiceline_id, tax.em_fet_isieps) tax
  on il.c_invoiceline_id = tax.c_invoiceline_id
 WHERE il.C_invoice_ID = $P{DOCUMENT_ID}

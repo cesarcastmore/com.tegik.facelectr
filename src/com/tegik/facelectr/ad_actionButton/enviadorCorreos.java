@@ -99,7 +99,7 @@ public class enviadorCorreos {
       mensaje = "Buen día. Le hacemos llegar sus archivos .xml y .pdf correspondientes a su factura #"
           + factura.getDocumentNo() + ". Gracias.";
       asunto = "Factura " + factura.getDocumentNo() + " correspondiente a su compra en "
-          + factura.getOrganization().getName();
+          + factura.getOrganization().getSocialName();
 
     }
     

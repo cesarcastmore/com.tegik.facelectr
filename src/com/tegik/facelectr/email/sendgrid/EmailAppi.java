@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.tegik.facelectr.ad_actionButton.enviadorCorreos;
-
 
 public class EmailAppi {
   
