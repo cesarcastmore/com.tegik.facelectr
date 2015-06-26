@@ -1,5 +1,7 @@
 package com.tegik.facelectr.email;
-
+/*
+ * Esta clase es para enviar correo ya sea de la configuracion de sendgrid o la configuracion normal de Openbravo
+ */
 import java.io.File;
 import java.util.List;
 
@@ -9,49 +11,35 @@ import org.openbravo.model.common.enterprise.EmailServerConfiguration;
 import org.openbravo.model.common.invoice.Invoice;
 
 import com.tegik.facelectr.utilidad.Finder;
-import com.tegik.facelectr.utilidad.Parametrizacion;
 import com.tegik.facelectr.utilidad.Translate;
-import com.tegik.facelectr.utilidad.Validate;
-import com.tegik.facelectr.data.InforTimbrado;
-import com.tegik.facelectr.data.MensajeCorreo;
+import com.tegik.facelectr.email.params.DefaultPersonalizarEmail;
 
 public class SendingEmail {
 
   private static final Logger log = Logger.getLogger(SendingEmail.class);
 
-  PersonalizarEmail personalizar = new DefaultPersonalizarEmail();
+  CustomizeEmail personalizar = new DefaultPersonalizarEmail();
   Invoice invoice;
   List<File> archivos;
-  InforTimbrado timbrado;
+  
+ 
+  
 
-  public SendingEmail(Invoice invoice, List<File> archivos) throws Exception {
+  public SendingEmail(Invoice invoice, List<File> archivos, CustomizeEmail emailCustimize) throws Exception {
 
     this.invoice = invoice;
     this.archivos = archivos;
-    this.timbrado = invoice.getFetOrglegal().getFetInfotimbrado();
+    
+    this.personalizar = emailCustimize;
+    this.personalizar.setInvoice(invoice);
 
-    // Busca una clase para personalizar tus mensajes y si quieres enviar correo
-    if (timbrado.getAgregado() != null) {
-
-      String clasejavaCorreo = Finder.getJavaClass(timbrado.getListajavasenvio());
-      Validate.validateJavaCorreo(clasejavaCorreo);
-
-      this.personalizar = (PersonalizarEmail) Class.forName(clasejavaCorreo).newInstance();
-      this.personalizar.setInvoice(invoice);
-
-    } else {
-
-      this.personalizar = new DefaultPersonalizarEmail();
-      this.personalizar.setInvoice(invoice);
-
-    }
 
   }
 
   public void sentInvoice() {
     try {
 
-      if (this.personalizar.enviarCorreo() && this.timbrado.isEnviarcorreo()) {
+      if (this.personalizar.enviarCorreo()) {
         send(invoice, archivos);
         invoice.setFetStatuscorreo("Los archivos ha sido enviados correctamente");
         invoice.setFetCorreoenviado(true);
@@ -60,7 +48,6 @@ public class SendingEmail {
     } catch (Exception e) {
 
       e.printStackTrace();
-      log.info("Exception " + e.getMessage());
 
       String msg = Translate.translate(e.getMessage());
       invoice.setFetStatuscorreo(msg);
@@ -91,45 +78,9 @@ public class SendingEmail {
       }
     }
 
-    String mensaje = "";
-    String asunto = "";
-    InforTimbrado infoTimbrado = invoice.getFetOrglegal().getFetInfotimbrado();
-    MensajeCorreo msgGenerico = Finder.findMensaje(invoice.getOrganization(), infoTimbrado);
-    MensajeCorreo msgLegal = Finder.findMensaje(invoice.getFetOrglegal(), infoTimbrado);
-
-    if (this.personalizar.getMensage() != null || this.personalizar.getAsunto() != null) {
-      mensaje = this.personalizar.getMensage();
-      asunto = this.personalizar.getAsunto();
-    }
-
-    else if (msgGenerico != null) {
-
-      String msj = msgGenerico.getMensaje();
-      Parametrizacion para = new Parametrizacion(invoice);
-      mensaje = para.getMensajeParametros(msj);
-
-      String asu = msgGenerico.getAsunto();
-      Parametrizacion paraAsu = new Parametrizacion(invoice);
-      asunto = paraAsu.getMensajeParametros(asu);
-
-    } else if (msgLegal != null) {
-      String msj = msgLegal.getMensaje();
-      Parametrizacion para = new Parametrizacion(invoice);
-      mensaje = para.getMensajeParametros(msj);
-
-      String asu = msgLegal.getAsunto();
-      Parametrizacion paraAsu = new Parametrizacion(invoice);
-      asunto = paraAsu.getMensajeParametros(asu);
-
-    } else {
-
-      mensaje = "Buen día. Le hacemos llegar sus archivos .xml y .pdf correspondientes a su factura #"
-          + invoice.getDocumentNo() + ". Gracias.";
-      asunto = "Factura " + invoice.getDocumentNo() + " correspondiente a su compra en "
-          + invoice.getOrganization().getSocialName();
-
-    }
-
+    String mensaje = this.personalizar.getMessage();
+    String asunto = this.personalizar.getSubject();
+    
     serviceEmail.setAsunto(asunto);
     serviceEmail.setMensaje(mensaje);
 
@@ -138,9 +89,9 @@ public class SendingEmail {
 
     }
 
-    if (infoTimbrado.isEnviargrid()) {
+    if (this.personalizar.getCustomizeSendGrid().isSendGrid()) {
       
-      serviceEmail.send(infoTimbrado);
+      serviceEmail.send(this.personalizar.getCustomizeSendGrid());
             
 
     } else {

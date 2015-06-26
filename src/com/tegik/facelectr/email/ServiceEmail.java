@@ -76,30 +76,29 @@ public class ServiceEmail {
     
     EmailManager.sendEmail(servidor, auth, cuenta, password, seguridad, puerto, cuentaEnvio, correosAdjuntados,
         "", "", cuentaEnvio, asunto, mensaje, null, archivos, new Date(), null);
-    
-    
-    
+        
     
   }
   
   
-  public void send(InforTimbrado infoTimbrado) throws Exception{
+  public void send(CustomizeSendGrid sendGrid) throws Exception{
     
-    if(infoTimbrado.getUsernamegrid() == null){
+    if(sendGrid.createUserName() == null){
       throw new Exception("@FET_NoUserNameGrid@");
-    } else if(infoTimbrado.getPassgrid() == null){
+    } else if(sendGrid.createPassword() == null){
       throw new Exception("@FET_NoPassGrid@");
-    }else if(infoTimbrado.getFromgrid() == null){
+    }else if(sendGrid.createFrom() == null){
       throw new Exception("@FET_NoFromGrid@");
     }
      
-    SendGrid sendgrid = new SendGrid(infoTimbrado.getUsernamegrid(), infoTimbrado.getPassgrid() );
+    SendGrid sendgrid = new SendGrid(sendGrid.createUserName(), sendGrid.createPassword());
+    log.info("username "+ sendGrid.createUserName() +" password "+ sendGrid.createPassword());
 
     EmailAppi email = new EmailAppi();
 
     // Parametros de configuracion de
-    email.setFrom(infoTimbrado.getFromgrid());
-    email.setFromName(infoTimbrado.getFromnamegrid());
+    email.setFrom(sendGrid.createFrom());
+    email.setFromName(sendGrid.createFromName());
     
     email.setSubject(asunto);
     email.setText(mensaje);

@@ -8,7 +8,7 @@ import org.openbravo.model.financialmgmt.tax.TaxRate;
 
 import com.tegik.facelectr.attributes.AddAttributes;
 import com.tegik.facelectr.comprobante.GenerateFileXML;
-import com.tegik.facelectr.email.PersonalizarEmail;
+import com.tegik.facelectr.email.CustomizeEmail;
 import com.tegik.facelectr.timbrado.ServicioTimbradoPAC;
 
 public class Validate {
@@ -267,7 +267,7 @@ public class Validate {
 
      }
     
-    if(! (Class.forName(nameClass).newInstance() instanceof  PersonalizarEmail)){
+    if(! (Class.forName(nameClass).newInstance() instanceof  CustomizeEmail)){
       throw new Exception("@FET_JavaCorrreoNoInstancia@");
          
     }

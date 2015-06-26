@@ -1,9 +1,11 @@
-package com.tegik.facelectr.email;
+package com.tegik.facelectr.email.params;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EjemploEnvioCorreo extends PersonalizarEmail {
+import com.tegik.facelectr.email.CustomizeEmail;
+
+public class EjemploEnvioCorreo extends CustomizeEmail {
 
   @Override
   public boolean enviarCorreo() {
@@ -17,13 +19,13 @@ public class EjemploEnvioCorreo extends PersonalizarEmail {
   }
 
   @Override
-  public String getAsunto() {
+  public String createSubject() {
     String documentNo = invoice.getDocumentNo();
     return "Este es el asunto de ejemplo"+ documentNo;
   }
 
   @Override
-  public String getMensage() {
+  public String createMessage() {
     String documentNo = invoice.getDocumentNo();
     return "Es es el mensaje de ejemplo"+ documentNo;
   }

@@ -28,7 +28,13 @@ import com.tegik.facelectr.attributes.ComprobanteModificado;
 import com.tegik.facelectr.comprobante.GenerateCDFI;
 import com.tegik.facelectr.comprobante.GenerateFileXML;
 import com.tegik.facelectr.data.InforTimbrado;
+import com.tegik.facelectr.email.CustomizeEmail;
+import com.tegik.facelectr.email.CustomizeMessages;
+import com.tegik.facelectr.email.CustomizeSendGrid;
 import com.tegik.facelectr.email.SendingEmail;
+import com.tegik.facelectr.email.params.DefaultPersonalizarEmail;
+import com.tegik.facelectr.email.params.InfoTimMsgEmail;
+import com.tegik.facelectr.email.params.InforTimSendGrid;
 import com.tegik.facelectr.hearthbeat.ServicioTimbrado;
 import com.tegik.facelectr.servicios.soap.ConverterJAXB;
 import com.tegik.facelectr.utilidad.Util;
@@ -148,10 +154,42 @@ public class CreateElectronicInvoice extends DalBaseProcess {
       
       List<File> archivos = Util.getFilesInvoice(invoice);
   
-      //Para enviar el correo
-      SendingEmail sentEmail = new SendingEmail(invoice, archivos);
-      sentEmail.sentInvoice();
+      //Para enviar el correo  
+      //Clase para obtener los mensajes desde la pestaña de 
       
+      if(infoTimbrado.isEnviarcorreo()){
+        
+        InfoTimMsgEmail emailMsg = new InfoTimMsgEmail();
+        emailMsg.initializaVars(invoice);
+        InforTimSendGrid customizeSendGrid = new InforTimSendGrid();
+        customizeSendGrid.initializeVars(infoTimbrado);
+        
+        if (infoTimbrado.getAgregado() != null) {
+
+          String clasejavaCorreo = Finder.getJavaClass(infoTimbrado.getListajavasenvio());
+          Validate.validateJavaCorreo(clasejavaCorreo);
+
+          CustomizeEmail emailCustimize = (CustomizeEmail) Class.forName(clasejavaCorreo).newInstance();
+          emailCustimize.setCustomizeMessages(emailMsg);
+          emailCustimize.setCustomizeSendGrid(customizeSendGrid);
+          
+          SendingEmail sentEmail = new SendingEmail(invoice, archivos, emailCustimize);
+          sentEmail.sentInvoice();
+          
+
+        } else {
+
+          CustomizeEmail emailCustimize =new DefaultPersonalizarEmail();
+          emailCustimize.setCustomizeMessages(emailMsg);
+          emailCustimize.setCustomizeSendGrid(customizeSendGrid);
+          
+          SendingEmail sentEmail = new SendingEmail(invoice, archivos, emailCustimize);
+          sentEmail.sentInvoice();
+
+        }
+        
+      }
+            
           
       //mensage final
       msg.setMessage("@FET_SuccessFacturaAdj@");

@@ -1,9 +1,11 @@
-package com.tegik.facelectr.email;
+package com.tegik.facelectr.email.params;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultPersonalizarEmail extends PersonalizarEmail {
+import com.tegik.facelectr.email.CustomizeEmail;
+
+public class DefaultPersonalizarEmail extends CustomizeEmail {
 
   @Override
   public boolean enviarCorreo() {
@@ -18,12 +20,12 @@ public class DefaultPersonalizarEmail extends PersonalizarEmail {
   }
 
   @Override
-  public String getAsunto() {
+  public String createSubject() {
     return null;
   }
 
   @Override
-  public String getMensage() {
+  public String createMessage() {
     return null;
   }
 
