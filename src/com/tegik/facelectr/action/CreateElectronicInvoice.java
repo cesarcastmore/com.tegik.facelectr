@@ -17,7 +17,6 @@ import org.openbravo.scheduling.ProcessBundle;
 import org.openbravo.service.db.DalBaseProcess;
 import org.openbravo.model.ad.utility.Attachment;
 
-import com.tegik.contabilidad.medioselectronicos.mexico.utilidad.Utilidad;
 import com.tegik.facelectr.utilidad.Convertidor;
 import com.tegik.facelectr.utilidad.Deletrear;
 import com.tegik.facelectr.utilidad.Finder;
@@ -29,8 +28,6 @@ import com.tegik.facelectr.comprobante.GenerateCDFI;
 import com.tegik.facelectr.comprobante.GenerateFileXML;
 import com.tegik.facelectr.data.InforTimbrado;
 import com.tegik.facelectr.email.CustomizeEmail;
-import com.tegik.facelectr.email.CustomizeMessages;
-import com.tegik.facelectr.email.CustomizeSendGrid;
 import com.tegik.facelectr.email.SendingEmail;
 import com.tegik.facelectr.email.params.DefaultPersonalizarEmail;
 import com.tegik.facelectr.email.params.InfoTimMsgEmail;

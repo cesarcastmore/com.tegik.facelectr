@@ -81,6 +81,7 @@ public class InfoTimMsgEmail implements CustomizeMessages {
     log.info("asigna mensjes " +this.msg );
 
     
+    
   }
 
 }

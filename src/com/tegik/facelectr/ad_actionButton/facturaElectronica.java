@@ -16,6 +16,9 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+
 import java.security.spec.InvalidKeySpecException;
 
 import javax.servlet.ServletConfig;
@@ -56,10 +59,18 @@ import org.openbravo.scheduling.ProcessBundle;
 import org.openbravo.service.db.DalBaseProcess;
 import org.openbravo.service.db.DalConnectionProvider;
 
+import com.tegik.facelectr.email.CustomizeEmail;
+import com.tegik.facelectr.email.SendingEmail;
+import com.tegik.facelectr.email.params.ClientSendGrid;
+import com.tegik.facelectr.email.params.DefaultPersonalizarEmail;
+import com.tegik.facelectr.email.params.InfoTimMsgEmail;
+import com.tegik.facelectr.email.params.InforTimSendGrid;
+import com.tegik.facelectr.email.params.OrgEmailMessage;
 import com.tegik.facelectr.hearthbeat.ServicioTimbrado;
 import com.tegik.facelectr.utilidad.CreateFiles;
 import com.tegik.facelectr.utilidad.Finder;
 import com.tegik.facelectr.utilidad.Util;
+import com.tegik.facelectr.utilidad.Validate;
 
 /**
  * Creando una factura electrónica para México.
@@ -84,13 +95,14 @@ public class facturaElectronica  extends DalBaseProcess {
   
   private Attachment archivoPDF=null;
   private Attachment archivoXML=null;
-  
 
 
   // main HTTP call handler
   public OBError facturar(ProcessBundle bundle) throws Exception {
     
     String invoiceId = (String) bundle.getParams().get("C_Invoice_ID");  
+    Invoice facturaTest = OBDal.getInstance().get(Invoice.class, invoiceId);
+
     
 
     if (1 ==1) {
@@ -109,7 +121,6 @@ public class facturaElectronica  extends DalBaseProcess {
       attachFolder = attachFolder + Separador.substring(0, 1);
       
       
-      Invoice facturaTest = OBDal.getInstance().get(Invoice.class, invoiceId);
       Table table = OBDal.getInstance().get(Table.class, "318");
 
       
@@ -186,7 +197,6 @@ public class facturaElectronica  extends DalBaseProcess {
             } else {
               banderaTestStatus = "N";
             }
-          } else {
             banderaTestStatus = "Y";
           }
         }
@@ -262,41 +272,49 @@ public class facturaElectronica  extends DalBaseProcess {
           parameters.put("DOCUMENT_ID", invoiceId);
  
           if (strTimbrar == "OK") {
+            
+            Attachment archivoPDF= CreateFiles.createAttamentPDF(table.getId(), facturaTest.getId(), facturaTest);   
+             List<File> archivos = new ArrayList<File>();
+             archivos.add(Util.getFile(archivoPDF));
+             archivos.add(Util.getFile(archivoXML));
 
-            try {
-              OBContext.setAdminMode(true);
-              Invoice facturaParaCorreo = OBDal.getInstance().get(Invoice.class, invoiceId);
-              OBDal.getInstance().refresh(facturaParaCorreo);
+             
 
-              //Crear el PDF
-              archivoPDF= CreateFiles.createAttamentPDF(table.getId(), facturaParaCorreo.getId(), facturaParaCorreo);        
-              
 
+            
               
-              enviadorCorreos enviador = new enviadorCorreos(); // clase existente en el package             
-              String respuestaEnvio = enviador.solicitarEnvio(facturaParaCorreo, "Y", "Y", 
-                  Util.getFile(archivoPDF), Util.getFile(archivoXML));
+            OrgEmailMessage emailMsg = new OrgEmailMessage();
+              emailMsg.initialize(facturaTest);
+              ClientSendGrid customizeSendGrid = new ClientSendGrid();
+              customizeSendGrid.initialize(facturaTest.getClient());
               
-              
-              if (respuestaEnvio.equals("OK")) {
-                // se creo la factura y se envio correctamente al correo electronico.
-                myMessage.setType("Success");
-                myMessage.setTitle("Se ha creado existosamente la Factura Electrónica");
-                myMessage.setMessage("@FET_SuccessFacturaAdj@");
+              if (facturaTest.getClient().getFetEmailjava() != null) {
+
+                String clasejavaCorreo = Finder.getJavaClass(facturaTest.getClient().getFetEmailjava());
+                Validate.validateJavaCorreo(clasejavaCorreo);
+
+                CustomizeEmail emailCustimize = (CustomizeEmail) Class.forName(clasejavaCorreo).newInstance();
+                emailCustimize.setCustomizeMessages(emailMsg);
+                emailCustimize.setCustomizeSendGrid(customizeSendGrid);
                 
+                SendingEmail sentEmail = new SendingEmail(facturaTest, archivos, emailCustimize);
+                sentEmail.sentInvoice();
                 
-                OBContext.restorePreviousMode();                
 
-              } 
-            } catch (Exception e) {
-              StringWriter w = new StringWriter();
-              e.printStackTrace(new PrintWriter(w));
-              String errorfactura = w.toString();
-              myMessage.setType("Warning");
-              OBContext.restorePreviousMode();
-              myMessage.setTitle("Se ha creado existosamente la Factura Electrónica");
-              myMessage.setMessage(e.getMessage());
-            }
+              } else {
+
+                CustomizeEmail emailCustimize =new DefaultPersonalizarEmail();
+                emailCustimize.setCustomizeMessages(emailMsg);
+                emailCustimize.setCustomizeSendGrid(customizeSendGrid);
+                
+                SendingEmail sentEmail = new SendingEmail(facturaTest, archivos, emailCustimize);
+                sentEmail.sentInvoice();
+
+              }
+              
+            
+
+
 
           } else {
 
@@ -796,7 +814,7 @@ public class facturaElectronica  extends DalBaseProcess {
       OBDal.getInstance().save(archivoDAL); // Guarda el attachment
       OBDal.getInstance().flush();
       
-      archivoXML=archivoDAL;
+      
 
       
 
